@@ -18,30 +18,58 @@ function init() {
     websocket.onopen = function(e) { onOpen(e) };
     websocket.onclose = function(e) { onClose(e) };
     websocket.onmessage = function(e) { onMessage(e) };
-   // websocket.onerror = function(e) { onError(e) };
+   document.querySelector('#usePawn1').disabled = true;
+   document.querySelector('#usePawn2').disabled = true;
+   document.querySelector('#roll').disabled = true;
   }
   
 
   function onOpen(e) {
-
     game.getIsSaved();
     console.log("onOpen : game IsSaved: "+ game.isSaved);
     if(game.isSaved){
       game.restoreGameState()
       reconnect();
+      gameStarted = true;
+      console.log("dice op:" +  game.enemyDiceResult);
+        if(game.isMyTurn){
+          if(game.diceRollState==0){
+            document.querySelector('#roll').disabled = false;
+            document.querySelector('#usePawn1').disabled = true;
+            document.querySelector('#usePawn2').disabled = true;
+          }
+          else if(game.diceRollState==2){
+            document.querySelector('#roll').disabled = true;
+            document.querySelector('#usePawn1').disabled = false;
+            document.querySelector('#usePawn2').disabled = false;
+          }
+          else{
+            document.querySelector('#roll').disabled = true;
+          }
+
+        }else{
+          document.querySelector('#usePawn1').disabled = true;
+          document.querySelector('#usePawn2').disabled = true;
+          document.querySelector('#roll').disabled = true;
+        }
     }
     else if (waitForOpponent==false){
-      var buffer = new ArrayBuffer(4);
-      var dataView = new DataView(buffer);
-      dataView.setInt8(0, 0, true);
-      websocket.send(buffer);
-      waitForOpponent = true;
+      sendInitMessage();
     }
     websocket.onopen = null;
   }
   
+
+function sendInitMessage(){
+  var buffer = new ArrayBuffer(4);
+  var dataView = new DataView(buffer);
+  dataView.setInt8(0, 0, true);
+  websocket.send(buffer);
+  waitForOpponent = true;
+}
+
+
   function onMessage(e) {
-  
 
   //   var buffer = new ArrayBuffer(4);
     var dataView = new DataView(e.data);
@@ -49,16 +77,20 @@ function init() {
     console.log('received message with type: ' + mssgType);
     switch(mssgType){
       case 3: // dice result
-  
         game.diceResult = dataView.getInt8(1,true);
         console.log("I got my dice result:" + game.diceResult);
         game.diceRollState = 2;
-        renderAll();
+        renderAll();  
+        document.querySelector('#usePawn1').disabled = false;
+        document.querySelector('#usePawn2').disabled = false;
         break;
       case 4: // game start info
         setupGame(dataView);
         waitForOpponent = false;
         console.log('Game starterd');
+        if(game.isMyTurn){
+          document.querySelector('#roll').disabled = false;
+        }
         break;
       case 5: // enemy dice result
         game.enemyDiceResult = dataView.getInt8(1,true);
@@ -77,21 +109,30 @@ function init() {
       case 8: // its my turn
         console.log('Now its my turn');
         game.isMyTurn = true;
+        document.querySelector('#roll').disabled = false;
         renderAll();
         break;
       case 9: // end of game
         const winner =  dataView.getInt8(1,true);
         drawWinner(winner);
-        game = new GameState();
+        game = new GameState()
+        game.saveGameState();
         game.setIsSaved(false);
         gameStarted = false;
+        document.querySelector('#usePawn1').disabled = true;
+        document.querySelector('#usePawn2').disabled = true;
+        document.querySelector('#roll').disabled = true;
+        setTimeout(renderAll, 2000);
+        setTimeout(sendInitMessage, 2500);
         break;
       default:
         console.log('Unknown message');
         break;
     }
-  
-  
+    
+    if(gameStarted){
+      game.saveGameState();
+    }
   }
 
   
@@ -100,11 +141,6 @@ function init() {
       console.log(`[close] Connection closed cleanly, code=${e.code} reason=${e.reason}`);
     } else {
       console.log('[close] Connection died');
-    }
-    if(gameStarted){
-      console.log('SAVING GAME STATE');
-      game.saveGameState();
-    
     }
   };
 
@@ -121,16 +157,21 @@ function init() {
   }
 
   
-  function throwDice(){
+  function rollDice(){
     if (game.isMyTurn && game.diceRollState == 0){
-      console.log("throwing dice");
+      console.log("rolling dice");
       var buffer = new ArrayBuffer(3);
       var dataView = new DataView(buffer);
-      dataView.setInt8(0, 2, true);  // throw dice id
+      dataView.setInt8(0, 2, true);  // roll dice id
       dataView.setInt8(1, game.gameID, true);
       dataView.setInt8(2, game.playerNumber, true);
       websocket.send(buffer);
       game.diceRollState = 1;
+      document.querySelector('#roll').disabled = true;
+    }
+    if(gameStarted){
+      console.log('SAVING GAME STATE');
+      game.saveGameState();
     }
 
   }
@@ -160,10 +201,15 @@ function init() {
 
   function usePawn1(e){
     usePawn(0);
+    document.querySelector('#usePawn1').disabled = true;
+    document.querySelector('#usePawn2').disabled = true;
   }
+
 
   function usePawn2(e){
     usePawn(1);
+    document.querySelector('#usePawn1').disabled = true;
+    document.querySelector('#usePawn2').disabled = true;
   }
 
 
@@ -183,14 +229,19 @@ function init() {
       }else{
         console.log("I cant use pawn");
       }
+
+      if(gameStarted){
+        console.log('SAVING GAME STATE');
+        game.saveGameState();
+      }
   }
 
 
   window.addEventListener("load", init, false);
   window.addEventListener("load", renderAll, false);
 
-  let throwBtn = document.querySelector('#throw');
-  throwBtn.addEventListener('click', throwDice);
+  let rollBtn = document.querySelector('#roll');
+  rollBtn.addEventListener('click', rollDice);
 
   let usePawn1btn = document.querySelector('#usePawn1');
   usePawn1btn.addEventListener('click', usePawn1);

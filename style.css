@@ -1,0 +1,38 @@
+.flex-container {
+    display: flex;
+    flex-direction: column;
+    background-color: seashell;
+    width: min-content;
+  }
+
+  .buttons {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    
+  }
+
+  .button{
+    font-size: large;
+    padding: 2em 1em;
+    font-family: 'Comic Sans MS';  
+  }
+
+  .usePawn{
+    flex-grow: 2;
+    border-radius: 5%;
+  
+  }
+
+  .useDice{
+    flex-grow: 1;
+    background-color: rgb(245, 220, 183);   
+    border-radius: 25%;
+  }
+
+  .button:hover {
+    background-color: orange; /* Green */
+    color: white;
+  }
+
+

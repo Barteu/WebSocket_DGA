@@ -1,13 +1,4 @@
 export class GameState{
-    // constructor(gameID, playerNumber, isMyTurn, pawn1pos, pawn2pos, pawn3pos) {
-    //   this.gameID =  gameID;
-    //   this.playerNumber = playerNumber;
-    //   this.isMyTurn = isMyTurn;
-    //   this.diceResult = 0;
-    //   this.pawn1pos = pawn1pos;
-    //   this.pawn2pos = pawn2pos;
-    //   this.pawn3pos = pawn3pos;
-    // }
   
     constructor() {
         this.gameID =  -1;
@@ -35,11 +26,14 @@ export class GameState{
           localStorage.setItem('p2pawn1pos', JSON.stringify(this.p2pawn1pos));
           localStorage.setItem('p2pawn2pos', JSON.stringify(this.p2pawn2pos));
           localStorage.setItem('isSaved', JSON.stringify(true));
+          console.log("Game state has been SAVED");
   }
   
 
    restoreGameState() {
+     console.log("try to restore..");
       if (localStorage.getItem('isSaved')) {
+        console.log("restoring game state..");
         this.gameID = (JSON.parse(localStorage.getItem('gameID')));
         this.playerNumber = (JSON.parse(localStorage.getItem('playerNumber')));
         this.isMyTurn = (JSON.parse(localStorage.getItem('isMyTurn')));
@@ -61,7 +55,7 @@ export class GameState{
 
   setIsSaved(state){
     this.isSaved = state;
-    localStorage.setItem('isSaved', JSON.stringify(true));
+    localStorage.setItem('isSaved', JSON.stringify(state));
   }
 
 

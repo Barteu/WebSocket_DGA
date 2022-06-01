@@ -3,15 +3,23 @@
 <meta charset="utf-8">
 
 <script type="module" src="main.js"></script>
-
+<link rel="stylesheet" href="style.css">
 
 <body>
-<canvas id="myCanvas" width="600" height="600" style="border:2px solid #000000;">
-    Your browser does not support the HTML canvas tag.</canvas>
+
+<div class="flex-container">
+
+    <canvas id="myCanvas" width="600" height="600" style="border:2px solid #000000;">
+        Your browser does not support the HTML canvas tag.</canvas>
+    <div class="buttons">
+        <button class="useDice button" id="roll">Roll the dice</button>
+        <button class="usePawn button" id="usePawn1">Move pawn <strong>1</strong></button>
+        <button class="usePawn button" id="usePawn2">Move pawn <strong>2</strong></button>
+    </div>
+   
     
-<button id="throw">Throw a dice</button>
-<button id="usePawn1">Use pawn #1</button>
-<button id="usePawn2">Use pawn #2</button>
+</div>
+
 
 </body>
 
